@@ -1,0 +1,4 @@
+---
+# defaults file for nginxserverblock
+nginxserverblock_http_port: "80"
+nginxserverblock_https_port: "443"

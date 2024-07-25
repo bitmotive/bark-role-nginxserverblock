@@ -1,0 +1,119 @@
+{% if NGINXSERVERBLOCK_HTTPS_PORT != 'None' %}
+server {
+    listen {{ NGINXSERVERBLOCK_HTTP_PORT }};
+    server_name {{ NGINXSERVERBLOCK_SERVERNAME_STRING }};
+    return 301 https://$host$request_uri;
+}
+server {
+    listen {{ NGINXSERVERBLOCK_HTTPS_PORT }} ssl;
+    server_name {{ NGINXSERVERBLOCK_SERVERNAME_STRING }};
+
+    ssl_certificate /etc/ssl/certs/ssl_{{ NGINXSERVERBLOCK_HOSTNAME }}_fullchain.pem;
+    ssl_certificate_key /etc/ssl/private/ssl_{{ NGINXSERVERBLOCK_HOSTNAME }}_privkey.pem;
+
+    access_log /var/log/nginx/{{ NGINXSERVERBLOCK_HOSTNAME }}.access.log;
+    error_log  /var/log/nginx/{{ NGINXSERVERBLOCK_HOSTNAME }}.error.log;
+
+    root /var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/public_html/webroot;
+    index index.html index.php;
+
+    {% if NGINXSERVERBLOCK_REDIRECT_WWW %}
+    # enforce NO www
+    if ($host ~* ^www\.(.*))
+    {
+        set $host_without_www $1;
+        rewrite ^/(.*)$ $scheme://$host_without_www/$1 permanent;
+    }
+    {% endif %}
+
+    {% if NGINXSERVERBLOCK_SUPPORT_PHP and NGINXSERVERBLOCK_SUPPORT_PHP != 'NO' %}
+    
+    location / {
+        try_files $uri /index.php;
+    }
+
+    # unless the request is for a valid file, send to bootstrap
+    if (!-e $request_filename)
+    {
+        rewrite ^(.+)$ /index.php?q=$1 last;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+
+        # With php-fpm
+        fastcgi_pass unix:/run/php/php-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+    }
+
+    {% endif %}
+
+    # deny access to apache .htaccess files
+    location ~ /\.ht
+    {
+        deny all;
+    }
+
+    # deny access to any .git files
+    location ~ /\.git
+    {
+        deny all;
+    }
+
+}
+{% else %}
+server {
+    listen {{ NGINXSERVERBLOCK_HTTP_PORT }};
+    server_name {{ NGINXSERVERBLOCK_SERVERNAME_STRING }};
+
+    access_log /var/log/nginx/{{ NGINXSERVERBLOCK_HOSTNAME }}.access.log;
+    error_log  /var/log/nginx/{{ NGINXSERVERBLOCK_HOSTNAME }}.error.log;
+
+    root /var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/public_html/webroot;
+    index index.html index.php;
+
+    {% if NGINXSERVERBLOCK_REDIRECT_WWW %}
+    # enforce NO www
+    if ($host ~* ^www\.(.*))
+    {
+        set $host_without_www $1;
+        rewrite ^/(.*)$ $scheme://$host_without_www/$1 permanent;
+    }
+    {% endif %}
+
+    {% if NGINXSERVERBLOCK_SUPPORT_PHP and NGINXSERVERBLOCK_SUPPORT_PHP != 'NO' %}
+    location / {
+        try_files $uri /index.php;
+    }
+
+    # unless the request is for a valid file, send to bootstrap
+    if (!-e $request_filename)
+    {
+        rewrite ^(.+)$ /index.php?q=$1 last;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+
+        # With php-fpm
+        fastcgi_pass unix:/run/php/php-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+    }
+    {% endif %}
+
+    # deny access to apache .htaccess files
+    location ~ /\.ht
+    {
+        deny all;
+    }
+
+    # deny access to any .git files
+    location ~ /\.git
+    {
+        deny all;
+    }
+
+}
+{% endif %}

@@ -1,0 +1,259 @@
+---
+# ROLE: NGINXSERVERBLOCK
+#
+# DESCRIPTION:
+# This playbook provides an NGINXSERVERBLOCK for a unique domain hosted by NGINX
+
+
+###############################################################################
+################### VARIABLE INITIALIZATION & TASK SETUP ######################
+###############################################################################
+
+
+# NGINXSERVERBLOCK_HOSTNAME 
+# Hostname of the NGINX site to be served
+- name: NGINXSERVERBLOCK_HOSTNAME set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_HOSTNAME: "{{ lookup('env', 'NGINXSERVERBLOCK_HOSTNAME') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_HOSTNAME') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_HOSTNAME prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_HOSTNAME"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_HOSTNAME is not defined
+- name: NGINXSERVERBLOCK_HOSTNAME set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_HOSTNAME: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_HOSTNAME is not defined
+
+# NGINXSERVERBLOCK_SERVERNAME_STRING
+# String of domains and/or subdomains supported by this host
+- name: NGINXSERVERBLOCK_SERVERNAME_STRING set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_SERVERNAME_STRING: "{{ lookup('env', 'NGINXSERVERBLOCK_SERVERNAME_STRING') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_SERVERNAME_STRING') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_SERVERNAME_STRING prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_SERVERNAME_STRING"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_SERVERNAME_STRING is not defined
+- name: NGINXSERVERBLOCK_SERVERNAME_STRING set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_SERVERNAME_STRING: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_SERVERNAME_STRING is not defined
+
+# NGINXSERVERBLOCK_HTTP_PORT
+# HTTP Port to be used by this host
+- name: NGINXSERVERBLOCK_HTTP_PORT set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_HTTP_PORT: "{{ lookup('env', 'NGINXSERVERBLOCK_HTTP_PORT') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_HTTP_PORT') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_HTTP_PORT prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_HTTP_PORT"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_HTTP_PORT is not defined
+- name: NGINXSERVERBLOCK_HTTP_PORT set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_HTTP_PORT: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_HTTP_PORT is not defined
+  
+# NGINXSERVERBLOCK_HTTPS_PORT 
+# SSL Port to be used by this host
+- name: NGINXSERVERBLOCK_HTTPS_PORT set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_HTTPS_PORT: "{{ lookup('env', 'NGINXSERVERBLOCK_HTTPS_PORT') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_HTTPS_PORT') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_HTTPS_PORT prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_HTTPS_PORT"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_HTTPS_PORT is not defined
+- name: NGINXSERVERBLOCK_HTTPS_PORT set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_HTTPS_PORT: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_HTTPS_PORT is not defined
+
+# NGINXSERVERBLOCK_SSL_PRIVKEYPATH
+# Private key path of the SSL cert to be used for this hostname
+- name: NGINXSERVERBLOCK_SSL_PRIVKEYPATH set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_SSL_PRIVKEYPATH: "{{ lookup('env', 'NGINXSERVERBLOCK_SSL_PRIVKEYPATH') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_SSL_PRIVKEYPATH') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_SSL_PRIVKEYPATH prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_SSL_PRIVKEYPATH"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_SSL_PRIVKEYPATH is not defined
+- name: NGINXSERVERBLOCK_SSL_PRIVKEYPATH set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_SSL_PRIVKEYPATH: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_SSL_PRIVKEYPATH is not defined
+
+# NGINXSERVERBLOCK_SSL_PUBKEYPATH
+# Public key path of the SSL cert to be used for this hostname
+- name: NGINXSERVERBLOCK_SSL_PUBKEYPATH set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_SSL_PUBKEYPATH: "{{ lookup('env', 'NGINXSERVERBLOCK_SSL_PUBKEYPATH') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_SSL_PUBKEYPATH') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_SSL_PUBKEYPATH prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_SSL_PUBKEYPATH"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_SSL_PUBKEYPATH is not defined
+- name: NGINXSERVERBLOCK_SSL_PUBKEYPATH set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_SSL_PUBKEYPATH: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_SSL_PUBKEYPATH is not defined
+
+# NGINXSERVERBLOCK_REDIRECT_WWW
+# Boolean to determine if prepending www redirects to the host apex
+- name: NGINXSERVERBLOCK_REDIRECT_WWW set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_REDIRECT_WWW: "{{ lookup('env', 'NGINXSERVERBLOCK_REDIRECT_WWW') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_REDIRECT_WWW') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_REDIRECT_WWW prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_REDIRECT_WWW"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_REDIRECT_WWW is not defined
+- name: NGINXSERVERBLOCK_REDIRECT_WWW set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_REDIRECT_WWW: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_REDIRECT_WWW is not defined
+
+# NGINXSERVERBLOCK_SUPPORT_PHP
+# Boolean to determine if the NGINX config should include PHP-FPM support
+- name: NGINXSERVERBLOCK_SUPPORT_PHP set fact from env if possible
+  set_fact:
+    NGINXSERVERBLOCK_SUPPORT_PHP: "{{ lookup('env', 'NGINXSERVERBLOCK_SUPPORT_PHP') }}"
+  when: lookup('env', 'NGINXSERVERBLOCK_SUPPORT_PHP') | default('', true) | trim != ''
+- name: NGINXSERVERBLOCK_SUPPORT_PHP prompt user input if unset
+  pause:
+    prompt: "SET NGINXSERVERBLOCK_SUPPORT_PHP"
+    echo: yes
+  register: input
+  when: NGINXSERVERBLOCK_SUPPORT_PHP is not defined
+- name: NGINXSERVERBLOCK_SUPPORT_PHP set fact from user input
+  set_fact:
+    NGINXSERVERBLOCK_SUPPORT_PHP: "{{ input.user_input }}"
+  when: NGINXSERVERBLOCK_SUPPORT_PHP is not defined
+
+
+###############################################################################
+############################ ROLE IMPLEMENTATION ##############################
+###############################################################################
+
+
+# Step 1: Create folder for hostname and associated nginx structure
+
+- name: Setup directory structure for serving site
+  file:
+    path: "/var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0775'
+  loop:
+    - public_html
+    - private_html
+  become: yes
+
+# Step 2: If SSL support is set, copy public and private key files to target
+
+- name: Copy private key file to target
+  copy:
+    src: "{{ NGINXSERVERBLOCK_SSL_PRIVKEYPATH }}"
+    dest: /etc/ssl/private/ssl_{{ NGINXSERVERBLOCK_HOSTNAME }}_privkey.pem
+  become: yes
+  when: NGINXSERVERBLOCK_SSL_PRIVKEYPATH != 'None'
+
+- name: Copy public key file to target
+  copy:
+    src: "{{ NGINXSERVERBLOCK_SSL_PUBKEYPATH }}"
+    dest: /etc/ssl/certs/ssl_{{ NGINXSERVERBLOCK_HOSTNAME }}_fullchain.pem
+  become: yes
+  when: NGINXSERVERBLOCK_SSL_PUBKEYPATH != 'None'
+
+# # Step 3: Configure Nginx to Serve site
+
+- name: Copy nginx.conf to target
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ NGINXSERVERBLOCK_HOSTNAME }}.conf
+    owner: www-data
+    group: www-data
+    mode: '0775'
+  become: yes
+  notify: restart nginx
+
+- name: Create symlink from sites-available to sites-enabled
+  file:
+    src: /etc/nginx/sites-available/{{ NGINXSERVERBLOCK_HOSTNAME }}.conf
+    dest: /etc/nginx/sites-enabled/{{ NGINXSERVERBLOCK_HOSTNAME }}.conf
+    state: link
+    owner: www-data
+    group: www-data
+    mode: '0775'
+  become: yes
+  notify: restart nginx
+
+- name: Create setup directory for serving default site on host
+  file:
+    path: "/var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/private_html/setup"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0775'
+  become: yes
+
+- name: Create initial site file as plain html if php not supported
+  copy:
+    content: "Hello, World"
+    dest: "/var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/private_html/setup/index.html"
+    owner: www-data
+    group: www-data
+    mode: '0775'
+  when: not NGINXSERVERBLOCK_SUPPORT_PHP
+
+- name: Remove php file if php not supported
+  file:
+    path: "/var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/private_html/setup/index.php"
+    state: absent
+  become: yes
+  when: not NGINXSERVERBLOCK_SUPPORT_PHP
+  notify: restart nginx
+
+- name: Create initial site file as *.php file if php supported
+  copy:
+    content: "<?php phpinfo(); ?>"
+    dest: "/var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/private_html/setup/index.php"
+    owner: www-data
+    group: www-data
+    mode: '0775'
+  when: NGINXSERVERBLOCK_SUPPORT_PHP
+
+- name: Remove static index.html file if PHP supported
+  file:
+    path: "/var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/private_html/setup/index.html"
+    state: absent
+  become: yes
+  when: NGINXSERVERBLOCK_SUPPORT_PHP
+  notify: restart nginx
+
+- name: Symlink from public_html/webroot to private_html/setup
+  file:
+    src: /var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/private_html/setup/
+    dest: /var/www/{{ NGINXSERVERBLOCK_HOSTNAME }}/public_html/webroot
+    state: link
+    owner: www-data
+    group: www-data
+    mode: '0775'
+  notify: restart nginx
