@@ -1,2 +1,5 @@
 ---
-# handlers file for nginxserverblock
+- name: restart nginx
+  systemd:
+    name: nginx
+    state: restarted
