@@ -45,7 +45,7 @@ The HTTP Port to be used by the server block.
 
 **NGINXSERVERBLOCK_SUPPORT_PHP**
 
-"YES" or "NO" to include support for PHP.
+"YES" to include support for PHP. Empty string to exclude PHP support.
 
 
 Dependencies
